@@ -1,0 +1,23 @@
+<!-- Header Partial -->
+<header class="nexus-header">
+  <div class="container">
+    <a href="/dashboard" class="header-brand">
+      <div class="brand-icon">NX</div>
+      <div class="brand-text">
+        <h1>NEXUS</h1>
+        <span>Secure Operations Terminal</span>
+      </div>
+    </a>
+    <nav class="header-nav">
+      <% if (typeof user !== 'undefined' && user) { %>
+        <div class="user-badge">
+          <span class="dot"></span>
+          <span class="name"><%= user.username %></span>
+        </div>
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/terminal" class="nav-link">Terminal</a>
+        <a href="/logout" class="nav-link nav-link--logout">Logout</a>
+      <% } %>
+    </nav>
+  </div>
+</header>

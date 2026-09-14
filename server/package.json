@@ -1,0 +1,18 @@
+{
+  "name": "ctf-nexus-challenge",
+  "version": "1.0.0",
+  "description": "CTF Challenge — SQL Injection & XSS Exploitation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "compression": "^1.7.5",
+    "ejs": "^3.1.10",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.1",
+    "express-session": "^1.18.1",
+    "sql.js": "^1.11.0"
+  }
+}

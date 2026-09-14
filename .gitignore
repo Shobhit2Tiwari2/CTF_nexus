@@ -1,0 +1,19 @@
+# Dependencies
+server/node_modules/
+
+# Database (recreated on startup)
+server/*.db
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+
+# Raw CTF challenge files (keep secret from public repo)
+Knowledge.pdf
+flag.txt

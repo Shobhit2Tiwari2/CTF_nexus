@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS — Operations Dashboard</title>
+  <meta name="description" content="NEXUS Command & Control Dashboard">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥</text></svg>">
+</head>
+<body>
+  <canvas id="matrix-canvas"></canvas>
+
+  <div class="page-wrapper">
+    <%- include('partials/header', { user: user }) %>
+
+    <main class="dashboard-page">
+      <div class="container">
+
+        <!-- Dashboard Title -->
+        <h1 class="dashboard-title">
+          Welcome, <span><%= user.username %></span>
+        </h1>
+        <p class="dashboard-subtitle">
+          Role: <%= user.role.toUpperCase() %> &nbsp;|&nbsp; Clearance Level: <%= user.clearance_level %> &nbsp;|&nbsp; Session Active
+        </p>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Registered Agents</div>
+            <div class="stat-value"><%= stats.userCount %></div>
+            <div class="stat-unit">Active operators in the system</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Terminal Logs</div>
+            <div class="stat-value"><%= stats.logCount %></div>
+            <div class="stat-unit">Commands executed today</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">System Uptime</div>
+            <div class="stat-value"><%= Math.floor(stats.uptime / 60) %>m</div>
+            <div class="stat-unit"><%= stats.uptime %> seconds total</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Memory Usage</div>
+            <div class="stat-value"><%= stats.memoryUsage %></div>
+            <div class="stat-unit">MB heap allocated</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Worker Nodes</div>
+            <div class="stat-value"><%= stats.workers %></div>
+            <div class="stat-unit">Cluster processes active</div>
+          </div>
+        </div>
+
+        <!-- Sections Grid -->
+        <div class="sections-grid">
+
+          <!-- Classified Documents Section -->
+          <div class="section-card">
+            <div class="section-header">
+              <div class="icon">📁</div>
+              <h3>Classified Documents</h3>
+            </div>
+            <div class="section-body">
+              <p>
+                Access restricted intelligence files. Only authorized personnel
+                with appropriate clearance level may view these documents.
+              </p>
+              <ul class="doc-list">
+                <li class="doc-item">
+                  <span class="doc-icon">📄</span>
+                  <div class="doc-info">
+                    <h4>Knowledge.pdf</h4>
+                    <span>Classification: TOP SECRET • 12.8 KB</span>
+                  </div>
+                  <a href="/documents/classified" class="doc-link" target="_blank">
+                    Access →
+                  </a>
+                </li>
+                <li class="doc-item">
+                  <span class="doc-icon">🔐</span>
+                  <div class="doc-info">
+                    <h4>Operation Blackout</h4>
+                    <span>Classification: REDACTED • ACCESS DENIED</span>
+                  </div>
+                  <span class="doc-link" style="opacity: 0.3; pointer-events: none;">
+                    Locked
+                  </span>
+                </li>
+                <li class="doc-item">
+                  <span class="doc-icon">🔐</span>
+                  <div class="doc-info">
+                    <h4>Project Phoenix Files</h4>
+                    <span>Classification: REDACTED • ACCESS DENIED</span>
+                  </div>
+                  <span class="doc-link" style="opacity: 0.3; pointer-events: none;">
+                    Locked
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Quick Actions Section -->
+          <div class="section-card">
+            <div class="section-header">
+              <div class="icon">⚡</div>
+              <h3>Quick Actions</h3>
+            </div>
+            <div class="section-body">
+              <div class="quick-actions">
+                <a href="/terminal" class="action-btn">
+                  <div class="action-icon">💻</div>
+                  <div>
+                    <strong>Command Terminal</strong>
+                    <br>
+                    <small style="color: var(--text-dim);">Execute system commands & view logs</small>
+                  </div>
+                  <span class="action-arrow">→</span>
+                </a>
+                <a href="/documents/classified" class="action-btn" target="_blank">
+                  <div class="action-icon">📥</div>
+                  <div>
+                    <strong>Download Intel</strong>
+                    <br>
+                    <small style="color: var(--text-dim);">Access classified Knowledge.pdf</small>
+                  </div>
+                  <span class="action-arrow">→</span>
+                </a>
+                <div class="action-btn" style="opacity: 0.4; cursor: not-allowed;">
+                  <div class="action-icon">🛡️</div>
+                  <div>
+                    <strong>Security Scanner</strong>
+                    <br>
+                    <small style="color: var(--text-dim);">Run vulnerability assessment</small>
+                  </div>
+                  <span class="action-arrow" style="color: var(--neon-pink);">OFFLINE</span>
+                </div>
+                <div class="action-btn" style="opacity: 0.4; cursor: not-allowed;">
+                  <div class="action-icon">📡</div>
+                  <div>
+                    <strong>Network Monitor</strong>
+                    <br>
+                    <small style="color: var(--text-dim);">Real-time traffic analysis</small>
+                  </div>
+                  <span class="action-arrow" style="color: var(--neon-pink);">OFFLINE</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- System Notice -->
+        <div class="section-card" style="margin-bottom: 32px;">
+          <div class="section-header">
+            <div class="icon">📢</div>
+            <h3>System Notices</h3>
+          </div>
+          <div class="section-body">
+            <p style="color: var(--neon-yellow);">
+              ⚠ NOTICE: The terminal subsystem is currently running in UNRESTRICTED mode.
+              Input validation has been temporarily disabled for maintenance.
+              All command logs are being recorded. Proceed with caution.
+            </p>
+            <p style="color: var(--text-dim); font-size: 11px; margin-bottom: 0;">
+              Last system audit: 2026-09-01 03:42:17 UTC &nbsp;|&nbsp; Next scheduled: PENDING
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <%- include('partials/footer') %>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
