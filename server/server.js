@@ -9,6 +9,9 @@ const { getPdfBuffer, getFlagContent } = require('./embedded_data');
 
 const app = express();
 
+// ─── Trust Proxy (Crucial for Render, Vercel, Heroku, Cloudflare) ───
+app.set('trust proxy', 1);
+
 // ─── Middleware ───
 app.use(compression());
 
@@ -42,18 +45,38 @@ const limiter = rateLimit({
   message: { error: 'Rate limit exceeded. Slow down, operator.' },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: {
+    xForwardedForHeader: false,
+    trustProxy: false
+  }
 });
 app.use(limiter);
 
-// Static files
-app.use(express.static(path.join(__dirname, 'public'), {
-  maxAge: '1h',
-  etag: true
-}));
+// Static files (check local server/public and root public)
+const candidateStaticDirs = [
+  path.join(__dirname, 'public'),
+  path.join(process.cwd(), 'public'),
+  path.join(process.cwd(), 'server', 'public')
+];
+for (const dir of candidateStaticDirs) {
+  if (fs.existsSync(dir)) {
+    app.use(express.static(dir, {
+      maxAge: '1h',
+      etag: true
+    }));
+  }
+}
 
-// View engine
+// View engine (check multiple candidate paths for Vercel, Render, Docker & local)
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+const candidateViewDirs = [
+  path.join(__dirname, 'views'),
+  path.join(process.cwd(), 'views'),
+  path.join(process.cwd(), 'server', 'views'),
+  path.join(__dirname, '..', 'views')
+].filter(p => fs.existsSync(p));
+
+app.set('views', candidateViewDirs.length > 0 ? candidateViewDirs : path.join(__dirname, 'views'));
 
 // ─── Async DB Initialization ───
 let db = null;

@@ -2,17 +2,28 @@ const initSqlJs = require('sql.js');
 const path = require('path');
 const fs = require('fs');
 
-// Vercel has a read-only filesystem — use /tmp there
-const DB_PATH = process.env.VERCEL
+// Determine writable database path (Vercel & serverless environments require /tmp)
+let DB_PATH = (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME)
   ? path.join('/tmp', 'ctf_nexus.db')
-  : path.join(__dirname, 'ctf_nexus.db');
+  : (process.env.DB_PATH || path.join(__dirname, 'ctf_nexus.db'));
 
 let dbInstance = null;
 
 async function initDatabase() {
   const sqlJsDir = path.dirname(require.resolve('sql.js'));
   const SQL = await initSqlJs({
-    locateFile: file => path.join(sqlJsDir, file)
+    locateFile: file => {
+      const candidates = [
+        path.join(sqlJsDir, file),
+        path.join(process.cwd(), 'node_modules', 'sql.js', 'dist', file),
+        path.join(process.cwd(), 'server', 'node_modules', 'sql.js', 'dist', file),
+        path.join(__dirname, 'node_modules', 'sql.js', 'dist', file)
+      ];
+      for (const candidate of candidates) {
+        if (fs.existsSync(candidate)) return candidate;
+      }
+      return path.join(sqlJsDir, file);
+    }
   });
 
   // Load existing DB or create new
@@ -122,7 +133,15 @@ function saveDatabase(db) {
     const buffer = Buffer.from(data);
     fs.writeFileSync(DB_PATH, buffer);
   } catch (e) {
-    console.error('[DB] Error saving:', e.message);
+    try {
+      // Fallback to /tmp if primary path is read-only (e.g. serverless)
+      DB_PATH = path.join('/tmp', 'ctf_nexus.db');
+      const data = db.export();
+      const buffer = Buffer.from(data);
+      fs.writeFileSync(DB_PATH, buffer);
+    } catch (err) {
+      console.error('[DB] Error saving:', e.message);
+    }
   }
 }
 
