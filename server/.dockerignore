@@ -1,0 +1,18 @@
+# Ignore dependencies
+node_modules
+
+# Ignore local databases and logs
+*.db
+*.db-journal
+*.log
+npm-debug.log*
+
+# Git and OS files
+.git
+.gitignore
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.*

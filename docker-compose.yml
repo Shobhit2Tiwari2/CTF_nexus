@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  ctf-nexus:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ctf-nexus-challenge
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - CLUSTER_ENABLED=false
+      # Optional environment variable overrides:
+      # - CTF_FLAG=your_custom_flag_here
+      # - CTF_PDF_BASE64=your_base64_encoded_pdf
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

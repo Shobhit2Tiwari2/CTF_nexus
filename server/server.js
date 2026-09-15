@@ -11,6 +11,16 @@ const app = express();
 
 // ─── Middleware ───
 app.use(compression());
+
+// ─── Health Check for Docker / Render / Cloud Monitoring ───
+app.get('/healthz', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -285,14 +295,21 @@ app.use((req, res) => {
 // Export the app for Vercel serverless functions
 module.exports = app;
 
-// ─── Local Development: Cluster Mode ───
+// ─── Server Startup (Local & Container/Production) ───
 if (require.main === module) {
-  const cluster = require('cluster');
-  const os = require('os');
-  const NUM_WORKERS = Math.max(2, os.cpus().length);
+  const PORT = process.env.PORT || 3000;
+  const HOST = process.env.HOST || '0.0.0.0';
+  const CLUSTER_ENABLED = process.env.CLUSTER_ENABLED === 'true';
 
-  if (cluster.isPrimary) {
-    console.log(`
+  if (CLUSTER_ENABLED) {
+    const cluster = require('cluster');
+    const os = require('os');
+    const NUM_WORKERS = process.env.WEB_CONCURRENCY
+      ? parseInt(process.env.WEB_CONCURRENCY, 10)
+      : Math.max(2, os.cpus().length);
+
+    if (cluster.isPrimary) {
+      console.log(`
   ╔══════════════════════════════════════════════════════╗
   ║          NEXUS CTF CHALLENGE SERVER                  ║
   ║          ══════════════════════════                   ║
@@ -301,18 +318,30 @@ if (require.main === module) {
   ╚══════════════════════════════════════════════════════╝
   `);
 
-    for (let i = 0; i < NUM_WORKERS; i++) {
-      cluster.fork();
-    }
+      for (let i = 0; i < NUM_WORKERS; i++) {
+        cluster.fork();
+      }
 
-    cluster.on('exit', (worker, code, signal) => {
-      console.log(`[CLUSTER] Worker ${worker.process.pid} died (${signal || code}). Restarting...`);
-      cluster.fork();
-    });
+      cluster.on('exit', (worker, code, signal) => {
+        console.log(`[CLUSTER] Worker ${worker.process.pid} died (${signal || code}). Restarting...`);
+        cluster.fork();
+      });
+    } else {
+      app.listen(PORT, HOST, () => {
+        console.log(`[WORKER ${process.pid}] Nexus CTF server active on http://${HOST}:${PORT}`);
+      });
+    }
   } else {
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-      console.log(`[WORKER ${process.pid}] Nexus CTF server active on port ${PORT}`);
+    // Single process mode — recommended for Docker & Render free/starter tiers
+    app.listen(PORT, HOST, () => {
+      console.log(`
+  ╔══════════════════════════════════════════════════════╗
+  ║          NEXUS CTF CHALLENGE SERVER                  ║
+  ║          ══════════════════════════                   ║
+  ║   Server active on http://${HOST}:${PORT}                ║
+  ║   PID: ${process.pid}                                        ║
+  ╚══════════════════════════════════════════════════════╝
+  `);
     });
   }
 }

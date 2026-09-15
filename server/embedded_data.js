@@ -39,12 +39,19 @@ function getPdfBuffer() {
   }
 
   // Priority 2: Local file on disk (if available)
-  const localPath = path.join(__dirname, '..', 'Knowledge.pdf');
-  if (fs.existsSync(localPath)) {
-    try {
-      cachedPdfBuffer = fs.readFileSync(localPath);
-      return cachedPdfBuffer;
-    } catch (e) {}
+  const candidatePdfPaths = [
+    process.env.KNOWLEDGE_PDF_PATH,
+    path.join(__dirname, '..', 'Knowledge.pdf'),
+    path.join(__dirname, 'Knowledge.pdf')
+  ].filter(Boolean);
+
+  for (const candidate of candidatePdfPaths) {
+    if (fs.existsSync(candidate)) {
+      try {
+        cachedPdfBuffer = fs.readFileSync(candidate);
+        return cachedPdfBuffer;
+      } catch (e) {}
+    }
   }
 
   // Priority 3: Decrypted embedded asset (failsafe standalone)
@@ -62,12 +69,19 @@ function getFlagContent() {
   }
 
   // Priority 2: Local file on disk (if available)
-  const localPath = path.join(__dirname, '..', 'flag.txt');
-  if (fs.existsSync(localPath)) {
-    try {
-      cachedFlagContent = fs.readFileSync(localPath, 'utf8');
-      return cachedFlagContent;
-    } catch (e) {}
+  const candidateFlagPaths = [
+    process.env.FLAG_FILE_PATH,
+    path.join(__dirname, '..', 'flag.txt'),
+    path.join(__dirname, 'flag.txt')
+  ].filter(Boolean);
+
+  for (const candidate of candidateFlagPaths) {
+    if (fs.existsSync(candidate)) {
+      try {
+        cachedFlagContent = fs.readFileSync(candidate, 'utf8');
+        return cachedFlagContent;
+      } catch (e) {}
+    }
   }
 
   // Priority 3: Decrypted embedded asset (failsafe standalone)

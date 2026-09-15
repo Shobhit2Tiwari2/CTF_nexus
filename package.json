@@ -1,0 +1,14 @@
+{
+  "name": "ctf-nexus-monorepo",
+  "version": "1.0.0",
+  "description": "CTF Challenge — SQL Injection & XSS Exploitation",
+  "private": true,
+  "scripts": {
+    "start": "cd server && npm start",
+    "dev": "cd server && npm run dev",
+    "build": "cd server && npm install",
+    "docker:build": "docker build -t ctf-nexus-challenge .",
+    "docker:run": "docker run -p 3000:3000 --rm ctf-nexus-challenge",
+    "docker:compose": "docker compose up --build"
+  }
+}

@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: ctf-nexus-challenge
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: WEB_CONCURRENCY
+        value: 1
+      - key: CLUSTER_ENABLED
+        value: false
