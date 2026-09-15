@@ -60,6 +60,46 @@
             </form>
           </div>
 
+          <!-- Early XSS Interceptor — MUST load before terminal output renders -->
+          <script>
+            (function() {
+              var flagRevealed = false;
+              function earlyFlagReveal() {
+                if (flagRevealed) return;
+                flagRevealed = true;
+                window.__xssDetected = true;
+                fetch('/api/flag')
+                  .then(function(r) { return r.json(); })
+                  .then(function(data) {
+                    // Build and show the flag modal
+                    var overlay = document.createElement('div');
+                    overlay.className = 'flag-overlay active';
+                    overlay.innerHTML =
+                      '<div class="flag-modal">' +
+                        '<div class="flag-modal-header">' +
+                          '<h2>\uD83C\uDFF4 FLAG CAPTURED \uD83C\uDFF4</h2>' +
+                          '<p>' + (data.message || 'XSS vulnerability exploited!') + '</p>' +
+                        '</div>' +
+                        '<div class="flag-content" style="white-space:pre-wrap;max-height:400px;overflow:auto;">' +
+                          data.flag_content.replace(/</g,'&lt;').replace(/>/g,'&gt;') +
+                        '</div>' +
+                        '<button class="flag-close-btn" onclick="this.closest(\'.flag-overlay\').remove()">DISMISS</button>' +
+                      '</div>';
+                    document.body.appendChild(overlay);
+                    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+                  })
+                  .catch(function(err) { console.error('[NEXUS] Flag fetch failed:', err); });
+              }
+              // Override alert/prompt/confirm BEFORE any injected scripts execute
+              var _alert = window.alert;
+              var _prompt = window.prompt;
+              var _confirm = window.confirm;
+              window.alert = function(m) { earlyFlagReveal(); return _alert.call(window, m); };
+              window.prompt = function(m, d) { earlyFlagReveal(); return _prompt.call(window, m, d); };
+              window.confirm = function(m) { earlyFlagReveal(); return _confirm.call(window, m); };
+            })();
+          </script>
+
           <!-- Output / Logs -->
           <div class="terminal-output">
             <% if (logs.length === 0) { %>
