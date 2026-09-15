@@ -2,7 +2,10 @@ const initSqlJs = require('sql.js');
 const path = require('path');
 const fs = require('fs');
 
-const DB_PATH = path.join(__dirname, 'ctf_nexus.db');
+// Vercel has a read-only filesystem — use /tmp there
+const DB_PATH = process.env.VERCEL
+  ? path.join('/tmp', 'ctf_nexus.db')
+  : path.join(__dirname, 'ctf_nexus.db');
 
 let dbInstance = null;
 
