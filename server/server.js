@@ -49,17 +49,21 @@ app.set('views', path.join(__dirname, 'views'));
 let db = null;
 const dbReady = initDatabase().then(d => { db = d; return d; }).catch(e => {
   console.error('[DB] Failed to initialize database:', e);
-  throw e;
+  // Do NOT throw here, otherwise Vercel crashes with unhandledRejection
+  return null; 
 });
 
 // Middleware to ensure DB is ready before handling any request
 app.use(async (req, res, next) => {
   try {
     if (!db) db = await dbReady;
+    if (!db) {
+      throw new Error("Database failed to initialize during startup. Check server logs.");
+    }
     next();
   } catch (err) {
     console.error('DB Init Error:', err);
-    res.status(500).send('500 - Internal Server Error (Database Initialization Failed)');
+    res.status(500).send(`500 - Internal Server Error (Database Initialization Failed). Details: ${err.message}`);
   }
 });
 
