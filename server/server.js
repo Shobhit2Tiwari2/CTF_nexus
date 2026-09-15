@@ -52,11 +52,14 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Static files (check local server/public and root public)
+// Static files (check local server/public, root public, and root directory)
 const candidateStaticDirs = [
   path.join(__dirname, 'public'),
   path.join(process.cwd(), 'public'),
-  path.join(process.cwd(), 'server', 'public')
+  path.join(process.cwd(), 'server', 'public'),
+  path.join(__dirname, '..', 'public'),
+  process.cwd(),
+  __dirname
 ];
 for (const dir of candidateStaticDirs) {
   if (fs.existsSync(dir)) {
@@ -67,13 +70,44 @@ for (const dir of candidateStaticDirs) {
   }
 }
 
-// View engine (check multiple candidate paths for Vercel, Render, Docker & local)
+// Fallback explicit static routes for css and js
+app.get('/css/style.css', (req, res, next) => {
+  const cssPaths = [
+    path.join(__dirname, 'public', 'css', 'style.css'),
+    path.join(process.cwd(), 'public', 'css', 'style.css'),
+    path.join(process.cwd(), 'server', 'public', 'css', 'style.css'),
+    path.join(process.cwd(), 'style.css'),
+    path.join(__dirname, 'style.css')
+  ];
+  for (const p of cssPaths) {
+    if (fs.existsSync(p)) return res.sendFile(p);
+  }
+  next();
+});
+
+app.get('/js/app.js', (req, res, next) => {
+  const jsPaths = [
+    path.join(__dirname, 'public', 'js', 'app.js'),
+    path.join(process.cwd(), 'public', 'js', 'app.js'),
+    path.join(process.cwd(), 'server', 'public', 'js', 'app.js'),
+    path.join(process.cwd(), 'app.js'),
+    path.join(__dirname, 'app.js')
+  ];
+  for (const p of jsPaths) {
+    if (fs.existsSync(p)) return res.sendFile(p);
+  }
+  next();
+});
+
+// View engine (check multiple candidate paths for Vercel, Render, Docker & flat uploads)
 app.set('view engine', 'ejs');
 const candidateViewDirs = [
   path.join(__dirname, 'views'),
   path.join(process.cwd(), 'views'),
   path.join(process.cwd(), 'server', 'views'),
-  path.join(__dirname, '..', 'views')
+  path.join(__dirname, '..', 'views'),
+  process.cwd(),
+  __dirname
 ].filter(p => fs.existsSync(p));
 
 app.set('views', candidateViewDirs.length > 0 ? candidateViewDirs : path.join(__dirname, 'views'));
