@@ -5,7 +5,7 @@
       "src": "api/index.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["views/**", "public/**", "db.js", "embedded_data.js", "server.js"]
+        "includeFiles": ["views/**", "public/**", "db.js", "embedded_data.js", "server.js", "node_modules/sql.js/**/*.wasm"]
       }
     }
   ],
