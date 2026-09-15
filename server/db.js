@@ -10,8 +10,9 @@ const DB_PATH = process.env.VERCEL
 let dbInstance = null;
 
 async function initDatabase() {
+  const sqlJsDir = path.dirname(require.resolve('sql.js'));
   const SQL = await initSqlJs({
-    locateFile: file => path.join(__dirname, 'node_modules', 'sql.js', 'dist', file)
+    locateFile: file => path.join(sqlJsDir, file)
   });
 
   // Load existing DB or create new

@@ -47,12 +47,20 @@ app.set('views', path.join(__dirname, 'views'));
 
 // ─── Async DB Initialization ───
 let db = null;
-const dbReady = initDatabase().then(d => { db = d; return d; });
+const dbReady = initDatabase().then(d => { db = d; return d; }).catch(e => {
+  console.error('[DB] Failed to initialize database:', e);
+  throw e;
+});
 
 // Middleware to ensure DB is ready before handling any request
 app.use(async (req, res, next) => {
-  if (!db) db = await dbReady;
-  next();
+  try {
+    if (!db) db = await dbReady;
+    next();
+  } catch (err) {
+    console.error('DB Init Error:', err);
+    res.status(500).send('500 - Internal Server Error (Database Initialization Failed)');
+  }
 });
 
 // ─── Auth Middleware ───
