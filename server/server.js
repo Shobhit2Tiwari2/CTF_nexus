@@ -184,6 +184,10 @@ app.get('/', (req, res) => {
   res.render('login', { error, success });
 });
 
+app.get('/login', (req, res) => {
+  res.redirect('/');
+});
+
 // ─── POST /login — VULNERABLE TO SQL INJECTION ───
 app.post('/login', (req, res) => {
   const { username, password, access_code } = req.body;
@@ -349,13 +353,10 @@ app.use((req, res) => {
 // EXPORT FOR VERCEL & LOCAL DEVELOPMENT
 // ═══════════════════════════════════════════════════════
 
-// Export the app for Vercel serverless functions
-module.exports = app;
-
-// ─── Server Startup (Local & Container/Production) ───
-if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
-  const HOST = process.env.HOST || '0.0.0.0';
+// ─── Server Startup (Local, Render & Container/Production) ───
+function startServer(customPort, customHost) {
+  const PORT = customPort || process.env.PORT || 3000;
+  const HOST = customHost || process.env.HOST || '0.0.0.0';
   const CLUSTER_ENABLED = process.env.CLUSTER_ENABLED === 'true';
 
   if (CLUSTER_ENABLED) {
@@ -384,13 +385,13 @@ if (require.main === module) {
         cluster.fork();
       });
     } else {
-      app.listen(PORT, HOST, () => {
+      return app.listen(PORT, HOST, () => {
         console.log(`[WORKER ${process.pid}] Nexus CTF server active on http://${HOST}:${PORT}`);
       });
     }
   } else {
     // Single process mode — recommended for Docker & Render free/starter tiers
-    app.listen(PORT, HOST, () => {
+    return app.listen(PORT, HOST, () => {
       console.log(`
   ╔══════════════════════════════════════════════════════╗
   ║          NEXUS CTF CHALLENGE SERVER                  ║
@@ -402,3 +403,11 @@ if (require.main === module) {
     });
   }
 }
+
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = app;
+module.exports.startServer = startServer;
+
